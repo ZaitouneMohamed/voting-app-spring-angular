@@ -10,18 +10,15 @@ import java.util.List;
 @Entity
 @Data
 @NoArgsConstructor
-public class Poll
-{
+public class Poll {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String question;
 
-    @ElementCollection
-    private List<String> options = new ArrayList<>();
-
-    @ElementCollection
-    private List<String> votes = new ArrayList<>();
-
+    // Initialize options to avoid null pointer exceptions
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OptionVote> options = new ArrayList<>();
 }
