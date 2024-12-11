@@ -15,6 +15,7 @@
 
     @RestController
     @RequestMapping("/api/polls")
+    @CrossOrigin("http://localhost:4200/")
     public class PollController
     {
         @Autowired
