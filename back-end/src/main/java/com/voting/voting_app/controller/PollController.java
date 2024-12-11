@@ -3,6 +3,8 @@
     import com.voting.voting_app.model.OptionVote;
     import com.voting.voting_app.model.Poll;
     import com.voting.voting_app.repository.PollRepository;
+    import com.voting.voting_app.request.Vote;
+    import com.voting.voting_app.service.PollService;
     import org.apache.coyote.Response;
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.http.ResponseEntity;
@@ -16,51 +18,33 @@
     public class PollController
     {
         @Autowired
-        private PollRepository pollRepository;
+
+
+        private PollService pollService;
 
         @PostMapping
         public Poll createPoll(@RequestBody Poll poll)
         {
-            return pollRepository.save(poll);
+            return pollService.createPoll(poll);
         }
 
         @GetMapping
         public List<Poll> getAllPolls()
         {
-            return pollRepository.findAll();
+            return pollService.getAllPolls();
         }
 
         @GetMapping("/{id}")
         public ResponseEntity<Poll> getPollById(@PathVariable Long id) {
-            Optional<Poll> poll = pollRepository.findById(id);
-            return poll.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+            return pollService.getPoll(id)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.noContent().build());
         }
 
-        @PostMapping("/{id}/vote")
-        public ResponseEntity<Poll> addVote(@PathVariable Long id ,@RequestBody String vote)
+        @PostMapping("/vote")
+        public void voteOnPoll(@RequestBody Vote vote)
         {
-            Optional<Poll> pollOptional = pollRepository.findById(id);
-
-            if (pollOptional.isPresent()) {
-                Poll poll = pollOptional.get();
-
-                // Find the option to vote for
-                OptionVote selectedOption = poll.getOptions().stream()
-                        .filter(option -> option.getVoteOption().equals(vote))
-                        .findFirst()
-                        .orElse(null);
-                // If the option exists, increment the vote count
-                if (selectedOption != null) {
-                    selectedOption.setVoteCount(selectedOption.getVoteCount() + 1);
-                    pollRepository.save(poll); // Save the updated poll
-                    return ResponseEntity.ok(poll); // Return the updated poll
-                } else {
-                    // If the option doesn't exist, return 400 Bad Request
-                    return ResponseEntity.badRequest().body(null);
-                }
-            } else {
-                // If the poll is not found, return 404 Not Found
-                return ResponseEntity.notFound().build();
-            }
+            pollService.vote(vote.getPollId() , vote.getOptionIndex());
         }
+
     }
