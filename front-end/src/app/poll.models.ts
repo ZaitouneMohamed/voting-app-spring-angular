@@ -3,7 +3,6 @@ export interface OptionVote {
   voteCount: number
 }
 export interface Poll {
-  id: number;
   question: String;
   options: OptionVote[]
 }
